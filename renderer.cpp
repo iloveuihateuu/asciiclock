@@ -8,8 +8,8 @@ Renderer::Renderer() {
 Renderer::~Renderer() {
   endwin();
 }
-void Renderer::refresh() {
-  clear(); 
+void Renderer::update() {
+  clear();
   refresh();
 }
 void Renderer::turnOffDelay() {

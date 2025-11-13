@@ -10,7 +10,7 @@ class Renderer {
   public:
     Renderer();
     ~Renderer();
-    void refresh();
+    void update();
     void turnOffDelay();    
 
     void printStringAtCenter(std::string str);
