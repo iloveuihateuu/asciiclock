@@ -3,7 +3,7 @@ Pretty self descriptionary.
 
 ## Build flags
 ``bash
-g++ main.cpp -o app -lncurses -lpanel -lmenu
+clang++ main.cpp renderer.cpp -o app -g -lncurses -lpanel -lmenu
 ``
 
 
