@@ -8,9 +8,11 @@ Renderer::Renderer() {
 Renderer::~Renderer() {
   endwin();
 }
-void Renderer::update() {
-  clear();
-  refresh();
+void Renderer::refresh() {
+  ::refresh();
+}
+void Renderer::clear() {
+  ::clear();
 }
 void Renderer::turnOffDelay() {
   nodelay(stdscr, TRUE);
@@ -149,4 +151,9 @@ void Renderer::drawEllipse(char c, Vei2 center, int radiusX, int radiusY) const 
       decisionSecond += decisionX - decisionY + (radiusX * radiusX);
     }
   }
+}
+void Renderer::drawShape(PositionList& list, char c) {
+   for(auto it = list.begin(); it != list.end(); ++it) {
+      putAt(c, *it);
+   } 
 }

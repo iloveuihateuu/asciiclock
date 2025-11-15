@@ -6,19 +6,30 @@ class PositionList {
   public:
     class Iterator {
       public:
-      std::vector<Vei2>::iterator iterator;
-      Vei2 operator*() const { return *iterator; }
-      Iterator& operator++() { ++iterator; return *this; }
-      Iterator& operator--() { --iterator; return *this; }
-      bool operator==(const Iterator& other) const { return iterator == other.iterator; }
-      bool operator!=(const Iterator& other) const { return iterator != other.iterator; }
+        Iterator(std::vector<Vei2>::iterator inIterator)
+          : iterator(inIterator)
+        {}
+        Vei2 operator*() const { return *iterator; }
+        Iterator& operator++() { ++iterator; return *this; }
+        Iterator& operator--() { --iterator; return *this; }
+        bool operator==(const Iterator& other) const { return iterator == other.iterator; }
+        bool operator!=(const Iterator& other) const { return iterator != other.iterator; }
+      private:
+        std::vector<Vei2>::iterator iterator;
     };
 
-    Iterator begin() { return Iterator{list.begin()}; }
-    Iterator end() { return Iterator{list.end()}; }
+    Iterator begin() { return Iterator{ list.begin() }; }
+    Iterator end() { return Iterator{ list.end() }; }
     
+  public:
+    void clear() {
+      list.clear();
+    }
     void add(Vei2 position) {
       list.push_back(position);
+    }
+    size_t size() {
+      return list.size();
     }
   private:
     std::vector<Vei2> list;
