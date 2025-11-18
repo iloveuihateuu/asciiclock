@@ -47,7 +47,7 @@ std::string Clock::getMonth() {
   return "Unknown";
 }
 std::string Clock::getMonthShort() {
-  std::string month = getDay();
+  std::string month = getMonth();
   return month.substr(0,3);
 }
 int Clock::getDayNumber() {

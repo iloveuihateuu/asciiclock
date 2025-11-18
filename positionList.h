@@ -4,6 +4,10 @@
 
 class PositionList {
   public:
+    Vei2& operator[](size_t index) {
+      return list[index];
+    }
+
     class Iterator {
       public:
         Iterator(std::vector<Vei2>::iterator inIterator)
@@ -17,7 +21,7 @@ class PositionList {
       private:
         std::vector<Vei2>::iterator iterator;
     };
-
+    
     Iterator begin() { return Iterator{ list.begin() }; }
     Iterator end() { return Iterator{ list.end() }; }
     

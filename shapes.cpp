@@ -26,6 +26,16 @@ void Shapes::plotLine(PositionList& list, Vei2 start, Vei2 end) {
     }
   }
 }
+void Shapes::plotLineAngle(PositionList& list, Vei2 start, int lenght, float angle, float xFactor) {
+  int hypotenuse = lenght;
+
+  int opposite = sin(angle * M_PI / 180.0f) * hypotenuse;
+  int adjecent = cos(angle * M_PI / 180.0f) * hypotenuse * xFactor;
+
+  Vei2 end = start + Vei2(adjecent, opposite);
+ 
+  plotLine(list, start, end);
+}
 void Shapes::plotCircle(PositionList& list, Vei2 center, int radius) {
   //An implementation of Bresehham's circle algorithm.
   int x = 0;
@@ -107,4 +117,59 @@ void Shapes::plotEllipse(PositionList& list, Vei2 center, int radiusX, int radiu
       decisionSecond += decisionX - decisionY + (radiusX * radiusX);
     }
   }
+}
+Vei2 Shapes::getLineAngleEndPosition(Vei2 start, int lenght, float angle, float xFactor) {
+  int hypotenuse = lenght;
+
+  int opposite = sin(angle * M_PI / 180.0f) * hypotenuse;
+  int adjecent = cos(angle * M_PI / 180.0f) * hypotenuse * xFactor;
+
+  Vei2 end = start + Vei2(adjecent, opposite);
+ 
+  return end; 
+}
+float Shapes::getHourHandAngle(int hour, int minute, int second) {
+  float angle = 0.0f;
+  float anglePerHour = 30.0f;
+  float anglePerMinute = 0.5f;
+  float anglePerSecond = anglePerMinute / 60.0f;
+
+  angle += anglePerHour * hour + anglePerMinute * minute + anglePerSecond * second;
+  
+  angle += 270.0f;
+
+  while(angle > 360.0f) {
+    angle-=360.0f;
+  }
+
+  return angle;
+}
+float Shapes::getMinuteHandAngle(int minute, int second) {
+  float angle = 0.0f;
+  float anglePerMinute = 6.0f;
+  float anglePerSecond = anglePerMinute / 60.0f;
+
+  angle += anglePerMinute * minute + anglePerSecond * second;
+  
+  angle += 270.0f;
+
+  while(angle > 360.0f) {
+    angle-=360.0f;
+  }
+
+  return angle;
+}
+float Shapes::getSecondHandAngle(int second) {
+  float angle = 0.0f;
+  float anglePerSecond = 6.0f;
+
+  angle += anglePerSecond * second;
+  
+  angle += 270.0f;
+
+  while(angle > 360.0f) {
+    angle-=360.0f;
+  }
+
+  return angle;
 }

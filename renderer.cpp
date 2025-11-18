@@ -1,4 +1,5 @@
 #include "renderer.h"
+#include <string>
 
 Renderer::Renderer() {
   initscr();
@@ -38,6 +39,26 @@ void Renderer::putAt(char c, Vei2 vec) const {
 
   addch(c);
 }
+void Renderer::putStringAt(std::string str, Vei2 vec, Shapes::Allignment allignment) const {
+  Vei2 pos(0,0);
+  int deviation;
+  switch(allignment) {
+    case(Shapes::Allignment::Left):
+      pos = vec;
+      break;
+    case(Shapes::Allignment::Center):
+      deviation = -str.size() / 2 + 1;
+      pos = vec - Vei2(deviation, 0);
+      break;
+    case(Shapes::Allignment::Right):
+      deviation = -str.size();
+      pos = vec - Vei2(deviation, 0);
+      break;
+  }
+  move(pos.y, pos.x);
+
+  printw(str.c_str());
+}
 void Renderer::drawLine(char c, Vei2 start, Vei2 end) const {
   //An basic implementation of the Bresenham line algorithm
   int deltaX = abs(end.x - start.x);
@@ -63,6 +84,80 @@ void Renderer::drawLine(char c, Vei2 start, Vei2 end) const {
       y += moveY;
     }
   }
+}
+void Renderer::drawLineSmooth(Vei2 start, Vei2 end) const {
+  //An basic implementation of the Bresenham line algorithm
+  int deltaX = abs(end.x - start.x);
+  int moveX = (start.x < end.x) ? 1 : -1;
+  int deltaY = -abs(end.y - start.y);
+  int moveY = (start.y < end.y) ? 1 : -1;
+
+  char straight;
+  char angled;
+
+  if(deltaX >= deltaY) {
+    straight = '|';
+  }
+  else {
+    straight = '-';
+  }
+  if (start.x >= end.x) {
+    angled = '\\';
+  }
+  else {
+    angled = '/';
+  }
+
+  char c = straight;
+
+  int error = deltaX + deltaY;
+
+  int x = start.x;
+  int y = start.y;
+  
+  int nMove;
+
+  while(true) {
+    putAt(c, Vei2(x,y));
+    nMove = 0;
+    if(x == end.x && y == end.y) break; 
+    int errorTwice = 2 * error;
+    if(errorTwice >= deltaY) {
+      error += deltaY;
+      x += moveX;
+      nMove++;
+    }
+    if(errorTwice <= deltaX) {
+      error += deltaX;
+      y += moveY;
+      nMove++;
+    }
+    if(nMove < 2) {
+      c = straight;
+    }
+    else {
+      c = angled;
+    }
+      
+  }
+}
+void Renderer::drawLineAngle(char c, Vei2 start, int lenght, float angle, float xFactor) const {
+  int hypotenuse = lenght;
+  int opposite = sin(angle * M_PI / 180.0f) * hypotenuse;
+  int adjecent = cos(angle * M_PI / 180.0f) * hypotenuse * xFactor;
+
+  Vei2 end = start + Vei2(adjecent, opposite);
+
+  drawLine(c, start, end);
+}
+void Renderer::drawLineSmoothAngle(Vei2 start, int lenght, float angle, float xFactor) const {
+  int hypotenuse = lenght;
+  int opposite = sin(angle * M_PI / 180.0f) * hypotenuse;
+  int adjecent = cos(angle * M_PI / 180.0f) * hypotenuse * xFactor;
+
+  Vei2 end = start + Vei2(adjecent, opposite);
+
+  drawLineSmooth(start, end);
 }
 void Renderer::drawCircle(char c, Vei2 center, int radius) const {
   //An implementation of Bresehham's circle algorithm.
@@ -153,7 +248,15 @@ void Renderer::drawEllipse(char c, Vei2 center, int radiusX, int radiusY) const 
   }
 }
 void Renderer::drawShape(PositionList& list, char c) {
-   for(auto it = list.begin(); it != list.end(); ++it) {
-      putAt(c, *it);
-   } 
+  for(auto it = list.begin(); it != list.end(); ++it) {
+    putAt(c, *it);
+  } 
+}
+void Renderer::drawClockNumbers(Vei2 center, int radius, float xFactor) const {
+  float anglePerHour = 30.0f;
+  for(int i = 0; i < 12; i++) {
+    int hour = i + 3;
+    if(hour > 12) hour -= 12;
+    putStringAt(std::to_string(hour), Shapes::getLineAngleEndPosition(center, radius, anglePerHour * i, xFactor), Shapes::Allignment::Center);
+  }
 }
