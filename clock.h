@@ -26,6 +26,7 @@ class Clock {
     int getHours();
     int getMinutes();
     int getSeconds();
+    int getTimestamp();
   private:
     std::time_t timeOfCreation;
     std::time_t timeCurrent;

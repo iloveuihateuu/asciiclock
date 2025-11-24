@@ -1,7 +1,9 @@
 #include "renderer.h"
 #include <string>
+#include <cmath>
 
 Renderer::Renderer() {
+  setlocale(LC_ALL, "");
   initscr();
   cbreak();
   noecho();
@@ -24,7 +26,7 @@ void Renderer::printStringAtCenter(std::string str) const {
 
   move(screenHeight/2, (screenWidth-str.size())/2);
 
-  printw(str.c_str());
+  printw("%s", str.c_str());
 }
 void Renderer::printStringAtBottomRight(std::string str) const {
   int screenHeight, screenWidth;
@@ -32,12 +34,14 @@ void Renderer::printStringAtBottomRight(std::string str) const {
 
   move(screenHeight - 1, screenWidth - str.size() - 1);
 
-  printw(str.c_str());
+  printw("%s", str.c_str());
 }
 void Renderer::putAt(char c, Vei2 vec) const {
-  move(vec.y, vec.x);
-
-  addch(c);
+  mvaddch(vec.y, vec.x, c);
+}
+void Renderer::putAt(wchar_t c, Vei2 vec) const {
+  wchar_t temp[2] = {c, L'\0'}; 
+  mvaddwstr(vec.y, vec.x, temp);
 }
 void Renderer::putStringAt(std::string str, Vei2 vec, Shapes::Allignment allignment) const {
   Vei2 pos(0,0);
@@ -57,7 +61,7 @@ void Renderer::putStringAt(std::string str, Vei2 vec, Shapes::Allignment allignm
   }
   move(pos.y, pos.x);
 
-  printw(str.c_str());
+  printw("%s", str.c_str());
 }
 void Renderer::drawLine(char c, Vei2 start, Vei2 end) const {
   //An basic implementation of the Bresenham line algorithm
@@ -87,28 +91,54 @@ void Renderer::drawLine(char c, Vei2 start, Vei2 end) const {
 }
 void Renderer::drawLineSmooth(Vei2 start, Vei2 end) const {
   //An basic implementation of the Bresenham line algorithm
-  int deltaX = abs(end.x - start.x);
+  int deltaX = end.x - start.x;
   int moveX = (start.x < end.x) ? 1 : -1;
-  int deltaY = -abs(end.y - start.y);
+  int deltaY = end.y - start.y;
   int moveY = (start.y < end.y) ? 1 : -1;
+  
+  int angle = atan2(deltaY, deltaX) * 180.0f / M_PI;
+  angle = Shapes::normalizeAngle(angle);
 
-  char straight;
-  char angled;
+  wchar_t primary;
+  wchar_t secondary;
+ 
+  if(angle >= 0 && angle < 45) {
+    primary = L'_';
+    secondary = L'\\';
+  }
+  if(angle >= 45 && angle < 90) {
+    primary = L'│';
+    secondary = L'\\';
+  }
+  if(angle >= 90 && angle < 135) {
+    primary = L'│';
+    secondary = L'/';
+  }
+  if(angle >= 135 && angle < 180) {
+    primary = L'_';
+    secondary = L'/';
+  }
+  if(angle >= 180 && angle < 225) {
+    primary = L'‾';
+    secondary = L'\\';
+  }
+  if(angle >= 225 && angle < 270) {
+    primary = L'│';
+    secondary = L'\\';
+  }
+  if(angle >= 270 && angle < 315) {
+    primary = L'│';
+    secondary = L'/';
+  }
+  if(angle >= 315 && angle <= 360) {
+    primary = L'‾';
+    secondary = L'/';
+  }
+  
+  deltaX = abs(deltaX);
+  deltaY = -abs(deltaY);
 
-  if(deltaX >= deltaY) {
-    straight = '|';
-  }
-  else {
-    straight = '-';
-  }
-  if (start.x >= end.x) {
-    angled = '\\';
-  }
-  else {
-    angled = '/';
-  }
-
-  char c = straight;
+  wchar_t c = primary;
 
   int error = deltaX + deltaY;
 
@@ -133,15 +163,15 @@ void Renderer::drawLineSmooth(Vei2 start, Vei2 end) const {
       nMove++;
     }
     if(nMove < 2) {
-      c = straight;
+      c = primary;
     }
     else {
-      c = angled;
+      c = secondary;
     }
-      
   }
 }
 void Renderer::drawLineAngle(char c, Vei2 start, int lenght, float angle, float xFactor) const {
+  angle = Shapes::normalizeAngle(angle);
   int hypotenuse = lenght;
   int opposite = sin(angle * M_PI / 180.0f) * hypotenuse;
   int adjecent = cos(angle * M_PI / 180.0f) * hypotenuse * xFactor;
@@ -151,15 +181,16 @@ void Renderer::drawLineAngle(char c, Vei2 start, int lenght, float angle, float 
   drawLine(c, start, end);
 }
 void Renderer::drawLineSmoothAngle(Vei2 start, int lenght, float angle, float xFactor) const {
+  angle = Shapes::normalizeAngle(angle);
   int hypotenuse = lenght;
   int opposite = sin(angle * M_PI / 180.0f) * hypotenuse;
   int adjecent = cos(angle * M_PI / 180.0f) * hypotenuse * xFactor;
 
   Vei2 end = start + Vei2(adjecent, opposite);
 
-  drawLineSmooth(start, end);
+  drawLineSmooth(start, end); 
 }
-void Renderer::drawCircle(char c, Vei2 center, int radius) const {
+void Renderer::drawCircle(wchar_t c, Vei2 center, int radius) const {
   //An implementation of Bresehham's circle algorithm.
   int x = 0;
   int y = radius;
@@ -178,7 +209,7 @@ void Renderer::drawCircle(char c, Vei2 center, int radius) const {
     circlePlotter(c, center, Vei2(x,y));
   }
 }
-void Renderer::circlePlotter(char c, Vei2 center, Vei2 point) const {
+void Renderer::circlePlotter(wchar_t c, Vei2 center, Vei2 point) const {
   putAt(c, Vei2(center.x + point.x, center.y + point.y));
   putAt(c, Vei2(center.x - point.x, center.y + point.y));
   putAt(c, Vei2(center.x + point.x, center.y - point.y));
@@ -194,7 +225,7 @@ int Renderer::getWidth() const {
 int Renderer::getHeight() const {
   return getmaxy(stdscr);
 }
-void Renderer::drawEllipse(char c, Vei2 center, int radiusX, int radiusY) const {
+void Renderer::drawEllipse(wchar_t c, Vei2 center, int radiusX, int radiusY) const {
   //implementation of the Mid-Point Ellipse Drawing Algorithm
   float decisionX, decisionY, decisionFirst, decisionSecond, x, y;
   x = 0;
@@ -247,10 +278,22 @@ void Renderer::drawEllipse(char c, Vei2 center, int radiusX, int radiusY) const 
     }
   }
 }
-void Renderer::drawShape(PositionList& list, char c) {
+void Renderer::drawShape(PositionList& list, wchar_t c) {
   for(auto it = list.begin(); it != list.end(); ++it) {
     putAt(c, *it);
   } 
+}
+void Renderer::drawSurface(Surface& surface, Vei2 pos) {
+  int surfaceWidth = surface.getWidth();
+  int surfaceHeight = surface.getHeight();
+
+  for(int x = 0; x < surfaceWidth; x++) {
+    for(int y = 0; y < surfaceHeight; y++) {
+      Vei2 surfacePos(x,y);
+      Vei2 screenPos = surfacePos + Vei2(pos.x, pos.y);
+      putAt(surface.valueAt(surfacePos), screenPos);
+    }
+  }
 }
 void Renderer::drawClockNumbers(Vei2 center, int radius, float xFactor) const {
   float anglePerHour = 30.0f;

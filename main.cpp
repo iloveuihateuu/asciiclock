@@ -1,8 +1,11 @@
 #include <ostream>
 #include <sstream>
+#include <string>
 
 #include "renderer.h"
 #include "clock.h"
+#include "surface.h"
+#include "input.h"
 
 using namespace std;
 int main() {
@@ -21,16 +24,36 @@ int main() {
   PositionList minuteHand;
   PositionList secondHand;
   
-  float handAngle = 0.0f;
+  bool showQuit = false;
+  int showQuitTimer = clock.getTimestamp();
+  constexpr int showQuitFor = 1;
+
+  wchar_t minuteHandSymbol = L':';
+  wchar_t hourHandSymbol = L'#';
+  wchar_t ellipseSymbol = L'█';
+  ellipseSymbol = L'.';
   
+  float handAngle = 0.0f;
   //x factor is for scaling the whole clock on the x axis because the terminal characters are longer on the y axis
   float xFactor = 1.0f;
+  int clockRadius;
+  
+  Surface surface;
+  
+  std::string filename = "test.sch";
+  Input input(filename);
 
-  int clockRadius = renderer.getHeight() / 2 - 2;
+  input.readSurface(surface);
 
   bool loop = true;
   while (loop) {
-    clockRadius = renderer.getHeight() / 2 - 2;
+    if(renderer.getHeight() < renderer.getWidth())
+    {
+      clockRadius = renderer.getHeight() / 2 - 2;
+    }
+    else {
+      clockRadius = renderer.getWidth() / 2 - 2;
+    }
     //clear the shape positionLists so there is no overdraw from previous frames.
     outerEllipse.clear();
     hourHand.clear();
@@ -46,41 +69,52 @@ int main() {
     //Shapes::plotEllipse(outerEllipse, center, 45, 20);
     Shapes::plotEllipse(outerEllipse, center, clockRadius * xFactor, clockRadius );
     Shapes::plotLineAngle(hourHand, start, clockRadius - 10, Shapes::getHourHandAngle(clock.getHours(), clock.getMinutes(), clock.getSeconds()), xFactor);
-    //Shapes::plotLineAngle(minuteHand, start, clockRadius - 5, Shapes::getMinuteHandAngle(clock.getMinutes(), clock.getSeconds()), xFactor);
-    Shapes::plotLineAngle(secondHand, start, clockRadius - 5, Shapes::getSecondHandAngle(clock.getSeconds()), xFactor);
-
-    handAngle+=0.1f;
-    
+    Shapes::plotLineAngle(minuteHand, start, clockRadius - 5, Shapes::getMinuteHandAngle(clock.getMinutes(), clock.getSeconds()), xFactor);
+    //Shapes::plotLineAngle(secondHand, start, clockRadius - 5, Shapes::getSecondHandAngle(clock.getSeconds()), xFactor);
     std::ostringstream currentTime;
 
     currentTime << clock.getHours() << ":" << clock.getMinutes() << ":" << clock.getSeconds();
 
     //clear the window before rendering.
     renderer.clear();
-
+    
     //draw the shapes from the positionLists to the window.
-    renderer.printStringAtBottomRight("Press q to quit.");
+    //when a key that is not recognized pressed display the press q to quit message for 2 seconds
+    if(showQuitTimer < clock.getTimestamp() - showQuitFor) {
+      showQuit = false;
+    }
+    if(showQuit) renderer.printStringAtBottomRight("Press q to quit.");
+    renderer.drawSurface(surface, Vei2(3,3));
 
     renderer.printStringAtCenter(currentTime.str());
 
-    renderer.drawShape(secondHand, '.');
-    //renderer.drawShape(minuteHand, ':');
-    renderer.drawLineSmoothAngle(start, clockRadius - 5, Shapes::getMinuteHandAngle(clock.getMinutes(), clock.getSeconds()), xFactor);
-    renderer.drawShape(hourHand, '#');
-    
+    //renderer.drawShape(secondHand, '.');
+    renderer.drawShape(minuteHand, minuteHandSymbol);
+    renderer.drawLineSmoothAngle(start, clockRadius - 5, Shapes::getSecondHandAngle(clock.getSeconds()), xFactor);
+    renderer.drawShape(hourHand, hourHandSymbol);
+
     renderer.drawClockNumbers(center, clockRadius - 2, xFactor);
 
-    renderer.drawShape(outerEllipse, '#');
-
+    renderer.drawShape(outerEllipse, ellipseSymbol);
+    
     //get inputs from user.
     switch(getch()) {
       case 'q':
         loop = false; break;
       case 'j': xFactor += 0.1f; 
-        break;
+                break;
       case 'k':
-        xFactor -= 0.1f; 
-        break;
+                xFactor -= 0.1f; 
+                break;
+      case 'a':
+                surface.advance();
+                break;
+      case -1:
+                break;
+      default:
+                showQuitTimer = clock.getTimestamp();
+                showQuit = true;
+                break;
     }
     //redraw the window.
     renderer.refresh();

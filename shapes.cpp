@@ -173,3 +173,21 @@ float Shapes::getSecondHandAngle(int second) {
 
   return angle;
 }
+float Shapes::normalizeAngle(float angle) {
+  while(angle > 360.0f) {
+    angle -= 360.0f;
+  }
+  while(angle < 0.0f) {
+    angle += 360.0f;
+  }
+  return angle;
+}
+float Shapes::normalizeAngle(int angle) {
+  if(angle > 360) {
+    angle %= 360;
+  }
+  while(angle < 0) {
+    angle += 360;
+  }
+  return angle;
+}

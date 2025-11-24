@@ -16,6 +16,8 @@ class Shapes {
     static float getHourHandAngle(int hour, int minute, int second);
     static float getMinuteHandAngle(int minute, int second);
     static float getSecondHandAngle(int second);
+    static float normalizeAngle(float angle);
+    static float normalizeAngle(int angle);
   private:
     static void circlePlotter(PositionList& list, Vei2 center, Vei2 point);
   public:

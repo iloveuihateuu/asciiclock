@@ -84,11 +84,15 @@ int Clock::getHours() {
 }
 int Clock::getMinutes() {
   update();
-  int hour = ( timeCurrent / 60 ) % 60;
-  return hour;
+  int minute = ( timeCurrent / 60 ) % 60;
+  return minute;
 }
 int Clock::getSeconds() {
   update();
-  int hour = timeCurrent % 60;
-  return hour;
+  int second = timeCurrent % 60;
+  return second;
+}
+int Clock::getTimestamp() {
+  update();
+  return timeCurrent;
 }

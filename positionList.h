@@ -1,6 +1,6 @@
 #include <vector>
 
-#include "Vec2.h"
+#include "vec2.h"
 
 class PositionList {
   public:
