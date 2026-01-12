@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/Users/radim/dev/ncurses/clock/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

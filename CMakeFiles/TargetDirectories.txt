@@ -1,0 +1,3 @@
+/Users/radim/dev/ncurses/clock/CMakeFiles/asciiclock.dir
+/Users/radim/dev/ncurses/clock/CMakeFiles/edit_cache.dir
+/Users/radim/dev/ncurses/clock/CMakeFiles/rebuild_cache.dir
