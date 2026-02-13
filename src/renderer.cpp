@@ -1,11 +1,96 @@
 #include "renderer.h"
-#include <string>
-#include <cmath>
+
+Window::Window()
+  : alive(true)
+{
+  WINDOW *newWindow = newwin(0, 0, 0, 0);
+  PANEL *panel = new_panel(newWindow);
+
+  windowPointer = newWindow;
+  panelPointer = panel;
+
+  box(newWindow, 0, 0);
+
+  top_panel(panelPointer);
+  update_panels();
+  doupdate();
+}
+Window::Window(WINDOW* in_windowPointer)
+  : windowPointer(in_windowPointer), panelPointer(nullptr), alive(true)
+{}
+Window::Window(WINDOW* in_windowPointer, PANEL* in_panelPointer)
+  : windowPointer(in_windowPointer), panelPointer(in_panelPointer), alive(true)
+{}
+Window::Window(RectI rect)
+  : alive(true)
+{
+  int height = rect.bottomRight.y - rect.topLeft.y;
+  int width = rect.bottomRight.x - rect.topLeft.x;
+  int startx = rect.topLeft.x;
+  int starty = rect.topLeft.y;
+
+  WINDOW *newWindow = newwin(height, width, starty, startx);
+  PANEL *panel = new_panel(newWindow);
+
+  windowPointer = newWindow;
+  panelPointer = panel;
+
+  box(newWindow, 0, 0);
+
+  top_panel(panelPointer);
+  update_panels();
+  doupdate();
+}
+Window::~Window() {
+  remove();
+}
+void Window::resize(RectI rect) {
+  if(!alive) return;
+  int height = rect.bottomRight.y - rect.topLeft.y;
+  int width = rect.bottomRight.x - rect.topLeft.x;
+  int startx = rect.topLeft.x;
+  int starty = rect.topLeft.y;
+
+  wresize(windowPointer, height, width);
+  mvwin(windowPointer, starty, startx);
+
+  replace_panel(panelPointer, windowPointer);
+}
+void Window::refresh() {
+  if(!alive) return;
+  update_panels();
+  doupdate();
+}
+void Window::erase() {
+  if(!alive) return;
+  werase(windowPointer);
+}
+void Window::bringToTop() {
+  if(!alive) return;
+  top_panel(panelPointer);
+  refresh();
+}
+void Window::remove() {
+  if(!alive) return;
+
+  erase();
+
+  hide_panel(panelPointer);
+  del_panel(panelPointer);
+  delwin(windowPointer);
+
+  update_panels();
+  doupdate();
+
+  windowPointer = nullptr;
+  panelPointer = nullptr;
+  alive = false;
+}
 
 Renderer::Renderer() {
   setlocale(LC_ALL, "");
   initscr();
-  cbreak();
+  raw();
   noecho();
   curs_set(0);
   keypad(stdscr, TRUE);
@@ -29,15 +114,15 @@ void Renderer::clear() {
 void Renderer::turnOffDelay() {
   nodelay(stdscr, TRUE);
 }
-void Renderer::printStringAtCenter(std::string str) const {
+void Renderer::printStringAtCenter(const std::string& str) const {
   int screenHeight, screenWidth;
   getmaxyx(stdscr, screenHeight, screenWidth);
 
-  move(screenHeight/2, (screenWidth-str.size())/2);
+  move(screenHeight / 2, (screenWidth-str.size()) / 2);
 
   printw("%s", str.c_str());
 }
-void Renderer::printStringAtBottomRight(std::string str) const {
+void Renderer::printStringAtBottomRight(const std::string& str) const {
   int screenHeight, screenWidth;
   getmaxyx(stdscr, screenHeight, screenWidth);
 
@@ -55,44 +140,23 @@ void Renderer::putAt(wchar_t c, Vei2 vec) const {
 void Renderer::setPosition(Vei2 pos) {
   move(pos.y, pos.x);
 } 
-void Renderer::putStringAt(std::string str, Vei2 vec, Shapes::Allignment allignment) const {
-  Vei2 pos(0,0);
-  int deviation;
-  switch(allignment) {
-    case Shapes::Allignment::Left:
-      pos = vec;
-      break;
-    case Shapes::Allignment::Center:
-      deviation = str.size() / 2;
-      pos = vec - Vei2(deviation, 0);
-      break;
-    case Shapes::Allignment::Right:
-      deviation = str.size();
-      pos = vec - Vei2(deviation, 0);
-      break;
-  }
-  move(pos.y, pos.x);
-
-  printw("%s", str.c_str());
+void Renderer::putStringAt(const std::string& str, Vei2 vec, Shapes::Allignment allignment) const {
+  Vei2 pos = Shapes::getTextStartPosition(str, vec, allignment);
+  mvaddstr(pos.y, pos.x, str.c_str());
 }
-void Renderer::putStringAt(std::wstring str, Vei2 vec, Shapes::Allignment allignment) const {
-  Vei2 pos(0,0);
-  int deviation;
-  switch(allignment) {
-    case Shapes::Allignment::Left:
-      pos = vec;
-      break;
-    case Shapes::Allignment::Center:
-      deviation = str.size() / 2 + 1;
-      pos = vec - Vei2(deviation, 0);
-      break;
-    case Shapes::Allignment::Right:
-      deviation = str.size();
-      pos = vec - Vei2(deviation, 0);
-      break;
-  }
-  wchar_t* c_wstr = &str[0];
+void Renderer::putStringAt(const std::wstring& str, Vei2 vec, Shapes::Allignment allignment) const {
+  Vei2 pos = Shapes::getTextStartPosition(str, vec, allignment);
+  const wchar_t* c_wstr = str.c_str();
   mvaddwstr(pos.y, pos.x, c_wstr);
+}
+void Renderer::putStringAt(Window* w, const std::string& str, Vei2 vec, Shapes::Allignment allignment) {
+  Vei2 pos = Shapes::getTextStartPosition(str, vec, allignment);
+  mvwaddstr(w->windowPointer, pos.y, pos.x, str.c_str());
+}
+void Renderer::putStringAt(Window* w, const std::wstring& str, Vei2 vec, Shapes::Allignment allignment) {
+  Vei2 pos = Shapes::getTextStartPosition(str, vec, allignment);
+  const wchar_t* c_wstr = str.c_str();
+  mvwaddwstr(w->windowPointer, pos.y, pos.x, c_wstr);
 }
 void Renderer::drawLine(char c, Vei2 start, Vei2 end) const {
   //An basic implementation of the Bresenham line algorithm
@@ -263,7 +327,22 @@ int Renderer::getCenterY() const {
   return getmaxy(stdscr) / 2;
 }
 Vei2 Renderer::getCenter() const {
-  return Vei2(getmaxx(stdscr) / 2, getmaxy(stdscr));
+  return Vei2(getmaxx(stdscr) / 2, getmaxy(stdscr) / 2);
+}
+int Renderer::getWidth(Window *w) const {
+  return getmaxx(w->windowPointer);
+}
+int Renderer::getHeight(Window *w) const {
+  return getmaxy(w->windowPointer);
+}
+int Renderer::getCenterX(Window *w) const {
+  return getmaxx(w->windowPointer) / 2;
+}
+int Renderer::getCenterY(Window *w) const {
+  return getmaxy(w->windowPointer) / 2;
+}
+Vei2 Renderer::getCenter(Window *w) const {
+  return Vei2(getmaxx(w->windowPointer) / 2, getmaxy(w->windowPointer) / 2);
 }
 void Renderer::drawEllipse(wchar_t c, Vei2 center, int radiusX, int radiusY) const {
   //implementation of the Mid-Point Ellipse Drawing Algorithm

@@ -10,18 +10,16 @@ class Interface {
   public:
     Interface()
     {
-      const std::string filename = "config";
-      if(io::fileExists(filename)) {
+      if(io::fileExists(input.getConfigPath())) {
         int selectedTimezone;
-        values.input.readConfig(values.xFactor, selectedTimezone);
+        input.readConfig(xFactor, updateInterval, selectedTimezone);
         std::vector<Timezone> timezones = Timezone::getTimezones();
-        values.clock.setTimezone(timezones[selectedTimezone]);
+        clock.setTimezone(timezones[selectedTimezone]);
         initSurfaces();
       }
       else {
         setup();
       }
-
     };
     void draw();
     void drawClock();
@@ -31,9 +29,13 @@ class Interface {
     enum class Styles {
       Basic,
       Word,
+      Floats,
+      Hybrid,
       Minimal,
+      Minimaler,
       Minimalest,
-      Skeleton
+      Skeleton,
+      Count
     };
   private:
     void initValues();
@@ -43,46 +45,53 @@ class Interface {
     void drawSecondHand(int radius);
     void drawMinuteHand(int radius);
     void drawHourHand(int radius);
-    void drawClockBezel();
-    void drawClockNumbers(Vei2 center, int radius, std::vector<std::string> numberSymbols, float xFactor) const;
+    void drawClockBezel() const;
+    void drawClockNumbers(Vei2 center, int radius, int segments, const std::vector<std::string>& symbols, float xFactor) const;
+    void drawClockNumbers(Vei2 center, int radius, int segments, const std::string& symbol, float xFactor) const;
+    void drawQuitMessage() const;
+    void drawStyleInfo();
     void drawBackground();
     void printTime();
     void drawArrows();
-    void cycleStyles();
-    void printTimezoneDescription(Timezone timezone, Vei2 pos);
-  private:
-    std::vector<Surface> surfaces{};
-    struct Values {
-      Values() 
-        :   showQuitFor(1), xFactor(1.0f), loop(true), showQuit(false)
-      {};
-      int width;
-      int height;
+    void cycleStyles(int n);
+    void printTimezoneDescription(const Timezone& timezone, Vei2 pos);
 
-      Clock clock{};
-      io input{};
+    RectI getInfoRect(int width, int height);
 
-      Vei2 center;
-      int clockRadius;
-      //x factor is for scaling the whole clock on the x axis because the terminal characters are longer on the y axis
-      float xFactor;
+    int screenWidth;
+    int screenHeight;
 
-      Styles style = Styles::Minimal;
+    Clock clock{};
+    io input{};
 
-      wchar_t minuteHandSymbol;
-      wchar_t hourHandSymbol;
-      wchar_t ellipseSymbol;
-      wchar_t leftArrowSymbol;
-      wchar_t rightArrowSymbol;
+    Vei2 center;
+    int clockRadius;
+    //x factor is for scaling the whole clock on the x axis because the terminal characters are longer on the y axis
+    float xFactor;
 
-      bool showQuit;
-      int showQuitTimer; 
-      const int showQuitFor;
+    Styles style = Styles::Minimal;
 
-      bool loop;
-      int loopCount = 0;
-    };
-  private:
+    wchar_t minuteHandSymbol;
+    wchar_t hourHandSymbol;
+    wchar_t ellipseSymbol;
+    wchar_t leftArrowSymbol;
+    wchar_t rightArrowSymbol;
+    wchar_t centerSymbol;
+
+    int updateInterval = 200;
+
+    int loopCount = 0;
+
     Renderer renderer;
-    Values values; 
-};                
+    std::vector<Surface> surfaces{};
+
+    int styleInfoLength = 20;
+    int styleInfoHeight = 4;
+    Window styleInfoWindow;
+
+    Timer showQuitTimer;
+    Timer showStyleInfoTimer;
+    Timer showArrowsTimer;
+
+    bool loop = true;
+};

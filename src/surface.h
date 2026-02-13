@@ -5,17 +5,9 @@
 
 class Surface {
   public:
-    Surface(int inWidth, int inHeight, int inFrames)
-      : width(inWidth), height(inHeight), frames(inFrames)
-    {
-      data.resize(frames);
-      for(auto &frame : data) {
-        frame.resize(width * height, L' ');
-      }
-    }
-    Surface()
-      : width(-1), height(-1)
-    {}
+    Surface(int inWidth, int inHeight, int inFrames);
+    Surface();
+    ~Surface() {};
     void putAt(wchar_t c, Vei2 pos, int frame);
     void putAt(wchar_t c, Vei2 pos);
     wchar_t valueAt(Vei2 pos, int frame);
@@ -37,5 +29,5 @@ class Surface {
     int height;
     int frames;
     int currentFrame = 1;
-    std::vector<std::vector<wchar_t>>data;
+    std::vector<std::vector<wchar_t>> data;
 };

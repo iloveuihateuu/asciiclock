@@ -1,5 +1,16 @@
 #include "surface.h"
 
+Surface::Surface(int inWidth, int inHeight, int inFrames)
+  : width(inWidth), height(inHeight), frames(inFrames)
+{
+  data.resize(frames);
+  for(auto &frame : data) {
+    frame.resize(width * height, L' ');
+  }
+}
+Surface::Surface()
+  : width(-1), height(-1) 
+{}
 void Surface::putAt(wchar_t c, Vei2 pos, int frame) {
   int index = width * pos.y + pos.x;
   data[frame - 1][index] = c;
@@ -19,6 +30,8 @@ wchar_t Surface::valueAt(Vei2 pos) {
 void Surface::clear() {
   width = -1;
   height = -1;
+  frames = 0;
+  currentFrame = 1;
 
   data.clear();
 }
@@ -52,7 +65,7 @@ void Surface::advance() {
 void Surface::scale(int newWidth, int newHeight) {
   float stepX = float(width) / float(newWidth);
   float stepY = float(height) / float(newHeight);
-  
+
   Surface temp = *this;
 
   clear();

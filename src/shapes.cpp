@@ -1,5 +1,43 @@
 #include "shapes.h"
 
+PositionList::Iterator::Iterator(std::vector<Vei2>::iterator inIterator)
+  : iterator(inIterator)
+{}
+Vei2& PositionList::operator[](size_t index) {
+  return list[index];
+}
+Vei2 PositionList::Iterator::operator*() const {
+  return *iterator;
+}
+PositionList::Iterator& PositionList::Iterator::operator++() {
+  ++iterator;
+  return *this;
+}
+PositionList::Iterator& PositionList::Iterator::operator--() {
+  --iterator;
+  return *this;
+}
+bool PositionList::Iterator::operator==(const Iterator& other) const {
+  return iterator == other.iterator;
+}
+bool PositionList::Iterator::operator!=(const Iterator& other) const {
+  return iterator != other.iterator;
+}
+PositionList::Iterator PositionList::begin() {
+  return Iterator{ list.begin() };
+}
+PositionList::Iterator PositionList::end() {
+  return Iterator{ list.end() };
+}
+void PositionList::clear() {
+  list.clear();
+}
+void PositionList::add(Vei2 position) {
+  list.push_back(position);
+}
+size_t PositionList::size() {
+  return list.size();
+}
 void Shapes::plotLine(PositionList& list, Vei2 start, Vei2 end) {
   //An basic implementation of the Bresenham line algorithm
   int deltaX = abs(end.x - start.x);
@@ -33,7 +71,7 @@ void Shapes::plotLineAngle(PositionList& list, Vei2 start, int lenght, float ang
   int adjecent = cos(angle * M_PI / 180.0f) * hypotenuse * xFactor;
 
   Vei2 end = start + Vei2(adjecent, opposite);
- 
+
   plotLine(list, start, end);
 }
 void Shapes::plotCircle(PositionList& list, Vei2 center, int radius) {
@@ -125,7 +163,7 @@ Vei2 Shapes::getLineAngleEndPosition(Vei2 start, int lenght, float angle, float 
   int adjecent = cos(angle * M_PI / 180.0f) * hypotenuse * xFactor;
 
   Vei2 end = start + Vei2(adjecent, opposite);
- 
+
   return end; 
 }
 float Shapes::getHourHandAngle(int hour, int minute, int second) {
@@ -135,7 +173,7 @@ float Shapes::getHourHandAngle(int hour, int minute, int second) {
   float anglePerSecond = anglePerMinute / 60.0f;
 
   angle += anglePerHour * hour + anglePerMinute * minute + anglePerSecond * second;
-  
+
   angle += 270.0f;
 
   while(angle > 360.0f) {
@@ -150,7 +188,7 @@ float Shapes::getMinuteHandAngle(int minute, int second) {
   float anglePerSecond = anglePerMinute / 60.0f;
 
   angle += anglePerMinute * minute + anglePerSecond * second;
-  
+
   angle += 270.0f;
 
   while(angle > 360.0f) {
@@ -164,7 +202,7 @@ float Shapes::getSecondHandAngle(int second) {
   float anglePerSecond = 6.0f;
 
   angle += anglePerSecond * second;
-  
+
   angle += 270.0f;
 
   while(angle > 360.0f) {
@@ -190,4 +228,40 @@ float Shapes::normalizeAngle(int angle) {
     angle += 360;
   }
   return angle;
+}
+Vei2 Shapes::getTextStartPosition(const std::string& str, Vei2 vec, Shapes::Allignment allignment) {
+  Vei2 pos(0,0);
+  int deviation;
+  switch(allignment) {
+    case Shapes::Allignment::Left:
+      pos = vec;
+      break;
+    case Shapes::Allignment::Center:
+      deviation = str.size() / 2;
+      pos = vec - Vei2(deviation, 0);
+      break;
+    case Shapes::Allignment::Right:
+      deviation = str.size();
+      pos = vec - Vei2(deviation, 0);
+      break;
+  }
+  return pos;
+}
+Vei2 Shapes::getTextStartPosition(const std::wstring& str, Vei2 vec, Shapes::Allignment allignment) {
+  Vei2 pos(0,0);
+  int deviation;
+  switch(allignment) {
+    case Shapes::Allignment::Left:
+      pos = vec;
+      break;
+    case Shapes::Allignment::Center:
+      deviation = str.size() / 2;
+      pos = vec - Vei2(deviation, 0);
+      break;
+    case Shapes::Allignment::Right:
+      deviation = str.size();
+      pos = vec - Vei2(deviation, 0);
+      break;
+  }
+  return pos;
 }

@@ -3,13 +3,8 @@
 
 class Timezone {
   public:
-    Timezone(char in_differenceHours, char in_differenceMinutes, std::string in_abbreviation, std::wstring in_fullname)
-      : differenceHours(in_differenceHours), differenceMinutes(in_differenceMinutes), abbreviation(in_abbreviation), fullname(in_fullname)
-    {}
-    Timezone()
-    {
-      Timezone(0, 0, "UTC+0:00", L"London, Dublin, Lisbon, Abidjan, Accra, Dakar");
-    }
+    Timezone(char in_differenceHours, char in_differenceMinutes, std::string in_abbreviation, std::wstring in_fullname);
+    Timezone();
     char differenceHours;
     char differenceMinutes;
     std::string abbreviation;
@@ -20,20 +15,10 @@ class Timezone {
 
 class Clock {
   public:
-    Clock(Timezone in_timezone)
-      : timezone(in_timezone)
-    {
-      auto now = std::chrono::system_clock::now();
-      timeCurrent = std::chrono::system_clock::to_time_t(now);
-      timeOfCreation = timeCurrent;
-    }
-    Clock()
-    {
-      Clock(Timezone());
-    }
+    Clock(Timezone in_timezone);
+    Clock();
     void update();
     void setTimezone(Timezone in_timezone);
-    
     /*  These aren't working
     int getYear();   
     int getMonthNumber();
@@ -52,4 +37,19 @@ class Clock {
     std::time_t timeCurrent;
 
     Timezone timezone;
+};
+
+class Timer {
+  public:
+    Timer();
+    void update();
+    void setTimer(time_t in_duration);
+    bool timerDue();
+  private:
+    std::time_t timerStart;
+    std::time_t timeCurrent;
+
+    std::time_t duration;
+
+    bool timerSet = false;
 };

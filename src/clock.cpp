@@ -1,6 +1,24 @@
 #include "clock.h"
 #include <string>
 
+Timezone::Timezone(char in_differenceHours, char in_differenceMinutes, std::string in_abbreviation, std::wstring in_fullname)
+  : differenceHours(in_differenceHours), differenceMinutes(in_differenceMinutes), abbreviation(in_abbreviation), fullname(in_fullname)
+{}
+Timezone::Timezone() {
+  Timezone(0, 0, "UTC+0:00", L"London, Dublin, Lisbon, Abidjan, Accra, Dakar");
+}
+Clock::Clock(Timezone in_timezone)
+  : timezone(in_timezone)
+{
+  auto now = std::chrono::system_clock::now();
+  timeCurrent = std::chrono::system_clock::to_time_t(now);
+  timeOfCreation = timeCurrent;
+}
+Clock::Clock()
+{
+  Clock(Timezone());
+}
+//  I would eat some raw steak rn
 void Clock::update() {
   auto now = std::chrono::system_clock::now();
   timeCurrent = std::chrono::system_clock::to_time_t(now);
@@ -8,76 +26,76 @@ void Clock::update() {
 void Clock::setTimezone(Timezone in_timezone) {
   timezone = in_timezone;
 }
-//These aren't working correctly but I'll leave it commented here if I want to fix it in the future but it probably doesn't matter since its not used
+//  These aren't working correctly but I'll leave it commented here if I want to fix it in the future but it probably doesn't matter since its not used
 /*int Clock::getYear() {
   update();
   int year = timeCurrent / 31536000 + 1970;
   return year;
-}
-int Clock::getMonthNumber() {
+  }
+  int Clock::getMonthNumber() {
   int month = (timeCurrent / 2592000 + 4) % 7;
   return month + 1;
-}
-std::string Clock::getMonth() {
+  }
+  std::string Clock::getMonth() {
   switch(getDayNumber()) {
-    case(1):
-      return "January";
-    case(2):
-      return "February";
-    case(3):
-      return "March";
-    case(4):
-      return "April";
-    case(5):
-      return "May";
-    case(6):
-      return "June";
-    case(7):
-      return "July";
-    case(8):
-      return "August";
-    case(9):
-      return "Semptember";
-    case(10):
-      return "October";
-    case(11):
-      return "November";
-    case(12):
-      return "December";
+  case(1):
+  return "January";
+  case(2):
+  return "February";
+  case(3):
+  return "March";
+  case(4):
+  return "April";
+  case(5):
+  return "May";
+  case(6):
+  return "June";
+  case(7):
+  return "July";
+  case(8):
+  return "August";
+  case(9):
+  return "Semptember";
+  case(10):
+  return "October";
+  case(11):
+  return "November";
+  case(12):
+  return "December";
   }
   return "Unknown";
-}
-std::string Clock::getMonthShort() {
+  }
+  std::string Clock::getMonthShort() {
   std::string month = getMonth();
   return month.substr(0,3);
-}
-int Clock::getDayNumber() {
+  }
+  int Clock::getDayNumber() {
   int dayOfTheWeek = (timeCurrent / 86400 + 4) % 7;
   return dayOfTheWeek + 1;
-}
-std::string Clock::getDay() {
+  }
+  std::string Clock::getDay() {
   switch(getDayNumber()) {
-    case(1):
-      return "Monday";
-    case(2):
-      return "Tuesday";
-    case(3):
-      return "Wednesday";
-    case(4):
-      return "Thursay";
-    case(5):
-      return "Friday";
-    case(6):
-      return "Saturday";
-    case(7):
-      return "Sunday";
+  case(1):
+  return "Monday";
+  case(2):
+  return "Tuesday";
+  case(3):
+  return "Wednesday";
+  case(4):
+  return "Thursay";
+  case(5):
+  return "Friday";
+  case(6):
+  return "Saturday";
+  case(7):
+  return "Sunday";
   }
   return "Unknown";
-}
-std::string Clock::getDayShort() {
+  }
+  std::string Clock::getDayShort() {
   std::string dayOfTheWeek = getDay();
   return dayOfTheWeek.substr(0,3);
-}*/
+  }*/
 int Clock::getHours() {
   update();
   int hour = (timeCurrent / 3600) % 24;
@@ -139,4 +157,29 @@ std::vector<Timezone> Timezone::getTimezones() {
   timezones.push_back(Timezone(13, 0, "UTC+13:00", L"Phoenix Islands, Tokelau, Samoa, Tonga"));
   timezones.push_back(Timezone(14, 0, "UTC+14:00", L"Line Islands"));
   return timezones;
+}
+Timer::Timer()
+  : duration(0)
+{
+  update();
+}
+void Timer::update() {
+  auto now = std::chrono::system_clock::now();
+  timeCurrent = std::chrono::system_clock::to_time_t(now);
+}
+void Timer::setTimer(time_t in_duration) {
+  update();
+  timerSet = true;
+  timerStart = timeCurrent;
+  duration = in_duration;
+}
+bool Timer::timerDue() {
+  if(!timerSet) return false;
+  update();
+  if(timeCurrent - timerStart >= duration) {
+    timerSet = false;
+    duration = 0;
+    return false;
+  }
+  return true;
 }

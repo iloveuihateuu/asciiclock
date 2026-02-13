@@ -1,7 +1,8 @@
 #include "input.h"
 
 Surface io::readSurface(const std::string& filename) {
-  std::wifstream stream(filename);
+  std::filesystem::path path = getSurfacesPath() / filename;
+  std::wifstream stream(path);
   if(!stream) {
     std::cerr << "Couldn't open " << filename << " (surface)." << std::endl;
     return Surface();
@@ -29,8 +30,8 @@ Surface io::readSurface(const std::string& filename) {
   }
   return surface;
 }
-bool io::readConfig(float& xFactor, int& selectedTimezone) {
-  std::wifstream stream("config");
+bool io::readConfig(float& xFactor, int& updateInterval, int& selectedTimezone) {
+  std::wifstream stream(getConfigPath());
   std::wstring name;
   wchar_t symbol;
   float value;
@@ -41,11 +42,22 @@ bool io::readConfig(float& xFactor, int& selectedTimezone) {
       }
       if(name == L"timezone") {
         selectedTimezone = value;
-      } }
+      } 
+      if(name == L"updateInterval") {
+        updateInterval = value;
+      } 
+    }
   }
   bool state = stream.good();
   stream.close();
   return state;
+}
+bool io::writeConfig(const std::string& data) {
+  return writeFile(data, getConfigPath());
+};
+bool io::fileExists(const std::filesystem::path path) {
+  std::ifstream stream(path);
+  return stream.good();
 }
 bool io::fileExists(const std::string& filename) {
   std::ifstream stream(filename);
@@ -64,4 +76,38 @@ bool io::writeFile(const std::wstring& data, const std::string& filename) {
   output << data;
   output.close();
   return output.good();
+}
+bool io::writeFile(const std::string& data, const std::filesystem::path path) {
+  std::ofstream output;
+  output.open(path);
+  output << data;
+  output.close();
+  return output.good();
+}
+bool io::writeFile(const std::wstring& data, const std::filesystem::path path) {
+  std::wofstream output;
+  output.open(path);
+  output << data;
+  output.close();
+  return output.good();
+}
+std::filesystem::path io::getConfigPath() {
+  std::string home = std::getenv("HOME");
+#if defined(__APPLE__)
+  std::string pathString = home + "/Library/Application Support/asciiclock/asciiclock.cfg";
+#elif defined(__linux__)
+  std::string pathString = home + "/.config/asciiclock/asciiclock.cfg";
+#endif
+  std::filesystem::path path(pathString);
+  return path;
+}
+std::filesystem::path io::getSurfacesPath() {
+  std::string home = std::getenv("HOME");
+#if defined(__APPLE__)
+  std::string pathString = home + "/Library/Application Support/asciiclock/dependencies/art/";
+#elif defined(__linux__)
+  std::string pathString = home + "/.local/share/asciiclock/dependencies/art/";
+#endif
+  std::filesystem::path path(pathString);
+  return path;
 }
