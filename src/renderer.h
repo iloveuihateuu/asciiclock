@@ -4,7 +4,11 @@
 #include <cmath>
 
 #include <locale.h>
+#if defined(__APPLE__)
 #include <ncursesw/ncurses.h>
+#elif defined(__linux__)
+#include <cursesw.h> 
+#endif
 #include <panel.h>
 
 #include "surface.h"

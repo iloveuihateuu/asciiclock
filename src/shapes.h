@@ -1,4 +1,5 @@
 #include <vector>
+#include <string>
 
 #include "vec2.h"
 
