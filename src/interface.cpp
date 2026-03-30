@@ -332,7 +332,6 @@ void Interface::setup() {
         break;
     }
   }
-  xFactor = xFactor;
   configFile << "xFactor = " << xFactor << std::endl;
   renderer.clear();
   loop = true;

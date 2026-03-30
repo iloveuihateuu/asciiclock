@@ -7,7 +7,7 @@
 #if defined(__APPLE__)
 #include <ncursesw/ncurses.h>
 #elif defined(__linux__)
-#include <cursesw.h> 
+#include <curses.h> 
 #endif
 #include <panel.h>
 
