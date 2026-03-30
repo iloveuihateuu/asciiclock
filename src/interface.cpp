@@ -304,7 +304,7 @@ void Interface::printTimezoneDescription(const Timezone& timezone, Vei2 pos) {
   renderer.putStringAt(timezone.fullname, pos + Vei2(timezone.abbreviation.size() + 2, 0), Shapes::Allignment::Left);
 }
 void Interface::setup() {
-  float xFactor = 2.0f;
+  xFactor = 2.0f;
   bool loop = true;
   initValues();
   int radius;
