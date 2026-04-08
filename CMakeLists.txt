@@ -19,3 +19,11 @@ target_link_libraries(asciiclock
     panel
     menu
 )
+
+add_compile_options(-O3)
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-mcpu=native)
+elseif(CMAKE_CXX_COMPIER_ID STREQUAL "GNU")
+  add_compile_options(-march=native)
+endif()
